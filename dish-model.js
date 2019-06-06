@@ -6,7 +6,10 @@ const db = knex(knexConfig.development);
 
 module.exports = {
   getDishes,
-  addDish
+  addDish,
+  getDish,
+  getRecipes,
+  addRecipe
 };
 
 function getDishes() {
@@ -17,23 +20,32 @@ function addDish(dish) {
   return db("dishes").insert(dish, "id");
 }
 
-function getDish(id) {
-  return db("dishes")
+async function getDish(id) {
+  const dish = await getDishes()
     .where({ id })
     .first();
+  const recipes = await getRecipes().where({ dish_id: id });
+  return {
+    ...dish,
+    recipes
+  };
 }
 
 function getRecipes() {
-  return db("recipes");
+  return db("dishes as d")
+    .join("recipes as r", "d.id", "r.dish_id")
+    .select("r.id", "r.name as recipe", "d.name as dish");
 }
 
 function addRecipe(recipe) {
-  return db("recipe").insert(recipe, id);
+  return db("recipes").insert(recipe, "id");
 }
 
 async function execute() {
-  const dish = await getDish(2);
-  console.log(dish);
+  // const dish = await getDish(2);
+  // console.log(dish);
+  const recipes = await getRecipes();
+  console.log(recipes);
 }
 
 execute();
